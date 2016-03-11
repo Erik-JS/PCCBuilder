@@ -43,8 +43,8 @@ namespace PCCBuilder
             public int Unk72; // 0x72
             public int GameVersion; // 0x76
             public int Unk7A; // 0x7A
-            public int Unk7E; // 0x7E
-            public int Unk82; // 0x82
+            public int CompressionFlags; // 0x7E
+            public int CompressedChunkCount; // 0x82
             public int Unk86; // 0x86
             public int Unk8A; // 0x8A
         }
@@ -112,6 +112,11 @@ namespace PCCBuilder
                 //Array.Copy(res.RawContents, 0, temparray, 0, x);
                 //res.RawContents = temparray;
                 res.FileHeaderOperation();
+                if (res.header.CompressedChunkCount != 0)
+                {
+                    Form1.Log("Compression detected. Not yet supported.", Form1.errorColor);
+                    return null;
+                }
                 res.NameTableOperation();
                 Form1.Log("Names: " + res.Names.Length, Color.LightBlue);
                 res.ImportsOperation();
@@ -195,8 +200,8 @@ namespace PCCBuilder
             header.Unk72 = ReadInt32(0x72);
             header.GameVersion = ReadInt32(0x76);
             header.Unk7A = ReadInt32(0x7A);
-            header.Unk7E = ReadInt32(0x7E);
-            header.Unk82 = ReadInt32(0x82);
+            header.CompressionFlags = ReadInt32(0x7E);
+            header.CompressedChunkCount = ReadInt32(0x82);
             header.Unk86 = ReadInt32(0x86);
             header.Unk8A = ReadInt32(0x8A);
         }
@@ -352,8 +357,8 @@ namespace PCCBuilder
                 headernode.AppendChild(xmldoc.CreateComment(GetVersionText()));
                 headernode.AppendChild(CreateNodeText(xmldoc, "GameVersion", HexString(header.GameVersion)));
                 headernode.AppendChild(CreateNodeText(xmldoc, "Unk7A", HexString(header.Unk7A)));
-                headernode.AppendChild(CreateNodeText(xmldoc, "Unk7E", HexString(header.Unk7E)));
-                headernode.AppendChild(CreateNodeText(xmldoc, "Unk82", HexString(header.Unk82)));
+                headernode.AppendChild(CreateNodeText(xmldoc, "CompressionFlags", HexString(header.CompressionFlags)));
+                headernode.AppendChild(CreateNodeText(xmldoc, "CompressedChunkCount", header.CompressedChunkCount.ToString()));
                 headernode.AppendChild(CreateNodeText(xmldoc, "Unk86", HexString(header.Unk86)));
                 headernode.AppendChild(CreateNodeText(xmldoc, "Unk8A", HexString(header.Unk8A)));
                 pccnode.AppendChild(headernode);
@@ -534,8 +539,8 @@ namespace PCCBuilder
                 pcc.header.Unk72 = XML_ReadInt32(xmldoc, "//PCC/Header/Unk72");
                 pcc.header.GameVersion = XML_ReadInt32(xmldoc, "//PCC/Header/GameVersion");
                 pcc.header.Unk7A = XML_ReadInt32(xmldoc, "//PCC/Header/Unk7A");
-                pcc.header.Unk7E = XML_ReadInt32(xmldoc, "//PCC/Header/Unk7E");
-                pcc.header.Unk82 = XML_ReadInt32(xmldoc, "//PCC/Header/Unk82");
+                pcc.header.CompressionFlags = XML_ReadInt32(xmldoc, "//PCC/Header/CompressionFlags");
+                pcc.header.CompressedChunkCount = XML_ReadInt32(xmldoc, "//PCC/Header/CompressedChunkCount");
                 pcc.header.Unk86 = XML_ReadInt32(xmldoc, "//PCC/Header/Unk86");
                 pcc.header.Unk8A = XML_ReadInt32(xmldoc, "//PCC/Header/Unk8A");
                 // NAMES
@@ -687,8 +692,8 @@ namespace PCCBuilder
             bw.Write(header.Unk72);
             bw.Write(header.GameVersion);
             bw.Write(header.Unk7A);
-            bw.Write(header.Unk7E);
-            bw.Write(header.Unk82);
+            bw.Write(header.CompressionFlags);
+            bw.Write(header.CompressedChunkCount);
             bw.Write(header.Unk86);
             bw.Write(header.Unk8A);
             return memstream.ToArray(); 
